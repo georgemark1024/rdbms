@@ -21,6 +21,36 @@ class Engine:
             del self.tables[name]
             return f"Table '{name}' dropped."
 
+    def inner_join(self, left_table_name, right_table_name, left_on, right_on):
+        """
+        Performs an Inner Join between two tables.
+        Returns a list of combined dictionaries.
+        """
+        left_table = self.get_table(left_table_name)
+        right_table = self.get_table(right_table_name)
+        
+        results = []
+
+        # Optimization: We iterate through the left table and 
+        # use the index on the right table for O(1) lookups.
+        for left_row in left_table.data:
+            key_value = left_row.get(left_on)
+            
+            # Use the existing index on the right table if it exists
+            # Otherwise, it performs a search (we can fallback to a scan)
+            matches = right_table.read_by_index(right_on, key_value)
+
+            for match in matches:
+                # Merge the two dictionaries with prefixes to avoid overlaps
+                combined_row = {}
+                for k, v in left_row.items():
+                    combined_row[f"{left_table_name}.{k}"] = v
+                for k, v in match.items():
+                    combined_row[f"{right_table_name}.{k}"] = v
+                results.append(combined_row)
+
+        return results
+
 class Table:
     """A database table representing a collection of records."""
     
