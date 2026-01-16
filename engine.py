@@ -29,7 +29,25 @@ class Table:
         # schema: {'col_name': type} e.g., {'id': int, 'name': str}
         self.schema = schema
         self.data = []  # List of dictionaries
+        # indexes: {'column_name': {value: [list_of_matching_records]}}
+        self.indexes = {}
         self._next_id = 1 # Simple auto-increment for a Primary Key behavior
+
+    def create_index(self, column_name):
+        """Builds a hash index for an existing column."""
+        if column_name not in self.schema:
+            raise ValueError(f"Column '{column_name}' does not exist.")
+        
+        # Initialize the index structure
+        self.indexes[column_name] = {}
+        
+        # Populate the index with existing data
+        for record in self.data:
+            val = record.get(column_name)
+            if val not in self.indexes[column_name]:
+                self.indexes[column_name][val] = []
+            self.indexes[column_name][val].append(record)
+        return f"Index created on '{column_name}'."
 
     def create_record(self, record_data):
         """Inserts a record after validating against the schema."""
@@ -42,6 +60,13 @@ class Table:
 
         # 2. Storage
         self.data.append(record_data)
+       
+        # Update indexes
+        for col in self.indexes:
+            val = record_data.get(col)
+            if val not in self.indexes[col]:
+                self.indexes[col][val] = []
+            self.indexes[col][val].append(record_data)
         return "Record inserted successfully."
 
     def read_records(self, filter_func=None):
@@ -64,4 +89,14 @@ class Table:
         original_count = len(self.data)
         self.data = [r for r in self.data if not filter_func(r)]
         return f"Deleted {original_count - len(self.data)} records."
+    
+    def read_by_index(self, column_name, value):
+        """Fast O(1) lookup using the hash index."""
+        if column_name not in self.indexes:
+            # Fallback to linear search if no index exists
+            print(f"No index on {column_name}, performing slow scan...")
+            return [r for r in self.data if r.get(column_name) == value]
+        
+        # Return the list of records from the hash map (dictionary)
+        return self.indexes[column_name].get(value, [])
     
