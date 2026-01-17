@@ -4,7 +4,7 @@ class Tokenizer:
     """Converts a SQL string into a list of meaningful tokens."""
     
     TOKEN_SPECIFICATION = [
-        ('KEYWORD',    r'\b(CREATE|TABLE|INSERT|INTO|VALUES|SELECT|FROM|WHERE|JOIN|ON|PRIMARY|KEY|UNIQUE|INT|STR)\b'),
+        ('KEYWORD', r'\b(CREATE|TABLE|INSERT|INTO|VALUES|SELECT|FROM|WHERE|JOIN|ON|PRIMARY|KEY|UNIQUE|INT|STR|UPDATE|SET|DELETE)\b'),
         ('NUMBER',     r'\d+'),                     # Integer literals
         ('STRING',     r"'(?:[^'\\]|\\.)*'"),       # String literals inside single quotes
         ('ID',         r'[a-zA-Z_][a-zA-Z0-9_]*'),  # Identifiers (table/column names)
@@ -56,6 +56,8 @@ class Parser:
             if command == 'CREATE': return self._handle_create(tokens[1:])
             if command == 'INSERT': return self._handle_insert(tokens[1:])
             if command == 'SELECT': return self._handle_select(tokens[1:])
+            if command == 'DELETE': return self._handle_delete(tokens[1:])
+            if command == 'UPDATE': return self._handle_update(tokens[1:])
             return f"Error: Unknown command '{command}'"
         except Exception as e:
             return f"Syntax Error: {str(e)}"
@@ -144,6 +146,36 @@ class Parser:
             return table.read_records(filter_func)
         except IndexError:
             raise ValueError("Syntax Error: SELECT statement is incomplete.")
+        
+    def _handle_delete(self, tokens):
+        # tokens[0] is 'FROM'
+        table_name = tokens[1][1]
+        table = self.engine.get_table(table_name)
+        
+        filter_func = self._extract_where_clause(tokens)
+        return table.delete_records(filter_func)
+    
+    def _handle_update(self, tokens):
+        table_name = tokens[0][1]
+        table = self.engine.get_table(table_name)
+        
+        # Find 'SET' and 'WHERE' to isolate the update values
+        set_index = -1
+        where_index = -1
+        for i, (kind, value) in enumerate(tokens):
+            if value == 'SET': set_index = i
+            if value == 'WHERE': where_index = i
+
+        # Extract update pairs (e.g., name = 'Bob')
+        # Simple version: handles one column update
+        col_to_update = tokens[set_index + 1][1]
+        # Skip the '=' at tokens[set_index + 2]
+        new_value = tokens[set_index + 3][1]
+        
+        updates = {col_to_update: new_value}
+        
+        filter_func = self._extract_where_clause(tokens)
+        return table.update_records(updates, filter_func)
         
     def _extract_where_clause(self, tokens):
         """

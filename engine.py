@@ -132,19 +132,39 @@ class Table:
             return [r for r in self.data if filter_func(r)]
         return self.data
 
-    def update_records(self, updates, filter_func):
-        """Updates records that match the filter_func."""
+    def update_records(self, updates, filter_func=None):
+        """
+        updates: dict of {column: new_value}
+        filter_func: logic to identify rows to change
+        """
         count = 0
         for record in self.data:
-            if filter_func(record):
-                record.update(updates)
+            # If no filter is provided, update ALL rows. 
+            # If filter is provided, only update matches.
+            if filter_func is None or filter_func(record):
+                # Update the record data
+                for col, val in updates.items():
+                    if col in self.schema:
+                        # Ensure type consistency
+                        record[col] = self.schema[col](val)
+                
+                # IMPORTANT: If an indexed column was updated, 
+                # you would technically need to rebuild that index here.
                 count += 1
         return f"Updated {count} records."
 
     def delete_records(self, filter_func):
         """Deletes records that match the filter_func."""
         original_count = len(self.data)
-        self.data = [r for r in self.data if not filter_func(r)]
+        if filter_func is None:
+            self.data = [] # Truncate table
+        else:
+            self.data = [r for r in self.data if not filter_func(r)]
+
+        # After deletion, indexes should be cleared/rebuilt
+        for col in self.indexes:
+            self.create_index(col)
+            
         return f"Deleted {original_count - len(self.data)} records."
     
     def read_by_index(self, column_name, value):
