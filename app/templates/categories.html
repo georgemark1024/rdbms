@@ -2,45 +2,40 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Manage Categories</title>
-    <style>
-        body { font-family: sans-serif; margin: 40px; line-height: 1.6; }
-        .error { color: #721c24; background-color: #f8d7da; padding: 10px; border: 1px solid #f5c6cb; border-radius: 4px; }
-        .success { color: #155724; background-color: #d4edda; padding: 10px; border: 1px solid #c3e6cb; border-radius: 4px; }
-        table { width: 50%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Manage Categories - RDBMS</title>
 </head>
 <body>
-    <h1>Manage Task Categories</h1>
-    <nav><a href="/">← Back to Dashboard</a></nav>
+    <div class="container">
+        <h1>Settings: Categories</h1>
+        <nav>
+            <a href="/">← Back to Tasks</a>
+        </nav>
 
-    <section>
-        <h3>Create New Category</h3>
-        <p><small>Testing Primary Key: Try adding an ID that already exists in the table below.</small></p>
-        
-        {% with messages = get_flashed_messages() %}
-          {% if messages %}
-            {% for message in messages %}
-              <div class="{{ 'error' if 'Error' in message or 'Duplicate' in message else 'success' }}">
-                  {{ message }}
-              </div>
-            {% endfor %}
-          {% endif %}
-        {% endwith %}
+        <section class="search-box" style="background: #f1f5f9; flex-direction: column; align-items: flex-start;">
+            <h3 style="margin-top: 0;">Create New Category</h3>
+            
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                {% for message in messages %}
+                  <div style="color: #dc2626; background: #fee2e2; padding: 10px; border-radius: 4px; margin-bottom: 10px; width: 100%;">
+                      {{ message }}
+                  </div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
 
-        <form action="/add_category" method="POST" style="margin-top: 20px;">
-            <input type="number" name="id" placeholder="Category ID" required>
-            <input type="text" name="name" placeholder="Category Name (e.g. Urgent)" required>
-            <button type="submit">Add Category</button>
-        </form>
-    </section>
+            <form action="/add_category" method="POST">
+                <input type="number" name="id" placeholder="ID" required style="width: 80px;">
+                <input type="text" name="name" placeholder="Category Name" required>
+                <button type="submit" class="btn btn-primary">Add Category</button>
+            </form>
+        </section>
 
-    <section>
         <h3>Existing Categories</h3>
         <table>
             <thead>
-                <tr style="background-color: #f2f2f2;">
+                <tr>
                     <th>ID (Primary Key)</th>
                     <th>Category Name</th>
                 </tr>
@@ -54,6 +49,6 @@
                 {% endfor %}
             </tbody>
         </table>
-    </section>
+    </div>
 </body>
 </html>
