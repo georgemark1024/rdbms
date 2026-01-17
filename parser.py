@@ -4,7 +4,7 @@ class Tokenizer:
     """Converts a SQL string into a list of meaningful tokens."""
     
     TOKEN_SPECIFICATION = [
-        ('KEYWORD', r'\b(CREATE|TABLE|INSERT|INTO|VALUES|SELECT|FROM|WHERE|JOIN|ON|PRIMARY|KEY|UNIQUE|INT|STR|UPDATE|SET|DELETE)\b'),
+        ('KEYWORD', r'\b(CREATE|TABLE|INSERT|INTO|VALUES|SELECT|FROM|WHERE|JOIN|ON|PRIMARY|KEY|UNIQUE|INT|STR|UPDATE|SET|DELETE|SAVE|LOAD)\b'),
         ('NUMBER',     r'\d+'),                     # Integer literals
         ('STRING',     r"'(?:[^'\\]|\\.)*'"),       # String literals inside single quotes
         ('ID',         r'[a-zA-Z_][a-zA-Z0-9_]*'),  # Identifiers (table/column names)
@@ -58,6 +58,8 @@ class Parser:
             if command == 'SELECT': return self._handle_select(tokens[1:])
             if command == 'DELETE': return self._handle_delete(tokens[1:])
             if command == 'UPDATE': return self._handle_update(tokens[1:])
+            if command == 'SAVE': return self._handle_save(tokens[1:])
+            if command == 'LOAD': return self._handle_load(tokens[1:])
             return f"Error: Unknown command '{command}'"
         except Exception as e:
             return f"Syntax Error: {str(e)}"
@@ -205,3 +207,13 @@ class Parser:
             return None
         except (IndexError, ValueError):
             raise ValueError("Malformed WHERE clause.")
+        
+    def _handle_save(self, tokens):
+        # Syntax: SAVE 'filename.db'
+        filename = tokens[0][1]
+        return self.engine.save_to_disk(filename)
+
+    def _handle_load(self, tokens):
+        # Syntax: LOAD 'filename.db'
+        filename = tokens[0][1]
+        return self.engine.load_from_disk(filename)

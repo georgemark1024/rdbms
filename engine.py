@@ -1,3 +1,5 @@
+import pickle
+
 class Engine:
     """The core DB engine that manages multiple tables."""
     
@@ -50,6 +52,26 @@ class Engine:
                 results.append(combined_row)
 
         return results
+    
+    def save_to_disk(self, filename):
+        """Serializes the entire tables dictionary to a file."""
+        try:
+            with open(filename, 'wb') as f:
+                pickle.dump(self.tables, f)
+            return f"Database successfully saved to '{filename}'."
+        except Exception as e:
+            return f"Save failed: {e}"
+
+    def load_from_disk(self, filename):
+        """Deserializes the tables dictionary from a file."""
+        try:
+            with open(filename, 'rb') as f:
+                self.tables = pickle.load(f)
+            return f"Database successfully loaded from '{filename}'."
+        except FileNotFoundError:
+            return f"Error: File '{filename}' not found."
+        except Exception as e:
+            return f"Load failed: {e}"
 
 class Table:
     """A database table representing a collection of records."""
