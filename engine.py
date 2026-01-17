@@ -46,9 +46,9 @@ class Engine:
                 # Merge the two dictionaries with prefixes to avoid overlaps
                 combined_row = {}
                 for k, v in left_row.items():
-                    combined_row[f"{left_table_name}.{k}"] = v
+                    combined_row[f"{left_table_name}_{k}"] = v
                 for k, v in match.items():
-                    combined_row[f"{right_table_name}.{k}"] = v
+                    combined_row[f"{right_table_name}_{k}"] = v
                 results.append(combined_row)
 
         return results
