@@ -137,9 +137,39 @@ class Parser:
             table_name = tokens[from_index + 1][1]
             table = self.engine.get_table(table_name)
             
-            # In a real RDBMS, we'd handle WHERE here. 
-            # For now, we return all records.
-            return table.read_records()
-            
+            # 2. Extract filter function
+            filter_func = self._extract_where_clause(tokens)
+
+            # 3. Use Engine's read_records with the filter
+            return table.read_records(filter_func)
         except IndexError:
             raise ValueError("Syntax Error: SELECT statement is incomplete.")
+        
+    def _extract_where_clause(self, tokens):
+        """
+        Look for 'WHERE' in tokens and return a filter function.
+        Example: WHERE id = 1
+        """
+        try:
+            where_index = -1
+            for i, (kind, value) in enumerate(tokens):
+                if kind == 'KEYWORD' and value == 'WHERE':
+                    where_index = i
+                    break
+            
+            if where_index == -1:
+                return None # No WHERE clause present
+
+            # We expect: WHERE <col> <op> <val>
+            col_name = tokens[where_index + 1][1]
+            operator = tokens[where_index + 2][1]
+            target_value = tokens[where_index + 3][1]
+
+            # Return a lambda that checks the condition
+            # Note: For a robust DB, you'd handle types and different operators here
+            if operator == "=":
+                return lambda row: str(row.get(col_name)) == str(target_value)
+            
+            return None
+        except (IndexError, ValueError):
+            raise ValueError("Malformed WHERE clause.")
