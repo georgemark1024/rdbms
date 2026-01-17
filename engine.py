@@ -23,34 +23,41 @@ class Engine:
             del self.tables[name]
             return f"Table '{name}' dropped."
 
-    def inner_join(self, left_table_name, right_table_name, left_on, right_on):
+    def inner_join(self, left_name, right_name, left_on, right_on, custom_left_data=None):
         """
-        Performs an Inner Join between two tables.
-        Returns a list of combined dictionaries.
+        Performs an Inner Join. 
+        custom_left_data: Optional list of records to use as the 'left' side (for filtering).
         """
-        left_table = self.get_table(left_table_name)
-        right_table = self.get_table(right_table_name)
+        l_tab = self.get_table(left_name)
+        r_tab = self.get_table(right_name)
         
+        # Use the provided filtered data, or fall back to the full table
+        left_records = custom_left_data if custom_left_data is not None else l_tab.data
         results = []
+        
+        # Hash Join Optimization: 
+        # Check if the right table has an index on the join column
+        right_index = r_tab.indexes.get(right_on)
 
-        # Optimization: We iterate through the left table and 
-        # use the index on the right table for O(1) lookups.
-        for left_row in left_table.data:
-            key_value = left_row.get(left_on)
+        for l_row in left_records:
+            val = l_row.get(left_on)
             
-            # Use the existing index on the right table if it exists
-            # Otherwise, it performs a search (we can fallback to a scan)
-            matches = right_table.read_by_index(right_on, key_value)
-
-            for match in matches:
-                # Merge the two dictionaries with prefixes to avoid overlaps
-                combined_row = {}
-                for k, v in left_row.items():
-                    combined_row[f"{left_table_name}_{k}"] = v
-                for k, v in match.items():
-                    combined_row[f"{right_table_name}_{k}"] = v
-                results.append(combined_row)
-
+            # If we have a hash index, lookup is O(1)
+            if right_index and val in right_index:
+                matches = right_index[val]
+            else:
+                # Fallback to manual scan if no index exists
+                matches = [r for r in r_tab.data if r.get(right_on) == val]
+                
+            for m in matches:
+                # Merge rows with underscore prefixes for HTML/Template compatibility
+                combined = {}
+                for k, v in l_row.items():
+                    combined[f"{left_name}_{k}"] = v
+                for k, v in m.items():
+                    combined[f"{right_name}_{k}"] = v
+                results.append(combined)
+                
         return results
     
     def save_to_disk(self, filename):

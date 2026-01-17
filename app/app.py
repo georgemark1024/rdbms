@@ -29,9 +29,25 @@ init_db()
 
 @app.route('/')
 def index():
-    categories = db.get_table("categories").read_records()
-    joined_data = db.inner_join("tasks", "categories", "cat_id", "id")
-    return render_template('index.html', categories=categories, joined_tasks=joined_data)
+    search_query = request.args.get('search')
+    cats = db.get_table("categories").read_records()
+    
+    # 1. Get the tasks table
+    tasks_table = db.get_table("tasks")
+    
+    # 2. If searching, use the engine's ability to filter
+    if search_query:
+        # We simulate the WHERE clause here
+        # SQL: SELECT * FROM tasks WHERE name = 'search_query'
+        filtered_tasks = tasks_table.read_records(lambda r: search_query.lower() in r['name'].lower())
+    else:
+        filtered_tasks = tasks_table.read_records()
+
+    # 3. Perform the Join on the (possibly filtered) tasks
+    # Our join method needs to handle the filtered list
+    joined_data = db.inner_join("tasks", "categories", "cat_id", "id", custom_left_data=filtered_tasks)
+    
+    return render_template('index.html', categories=cats, joined_tasks=joined_data)
 
 @app.route('/categories')
 def show_categories():

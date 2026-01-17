@@ -1,49 +1,59 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>RDBMS Dashboard</title>
-    <style>body { font-family: sans-serif; margin: 40px; } table { width: 100%; border-collapse: collapse; margin-top: 20px; }</style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>RDBMS Task Manager</title>
 </head>
 <body>
-    <h1>Task Dashboard</h1>
-    <nav>
-        <a href="/">Tasks</a> | <a href="/categories">Manage Categories</a>
-    </nav>
+    <div class="container">
+        <h1>Task Dashboard</h1>
+        <nav>
+            <a href="/">Tasks</a> | <a href="/categories">Settings</a>
+        </nav>
 
-    <section>
-        <h3>Add New Task</h3>
-        <form action="/add_task" method="POST">
-            <input type="number" name="id" placeholder="ID" required>
-            <input type="text" name="name" placeholder="Task Description" required>
-            <select name="cat_id">
-                {% for cat in categories %}
-                <option value="{{ cat.id }}">{{ cat.name }}</option>
+        <div class="search-box">
+            <form action="/" method="GET" style="width: 100%;">
+                <strong>Search Tasks: </strong>
+                <input type="text" name="search" placeholder="Enter task name..." value="{{ request.args.get('search', '') }}">
+                <button type="submit" class="btn btn-primary">Search</button>
+                {% if request.args.get('search') %}
+                    <a href="/" style="font-size: 12px; margin-left: 10px;">Clear Filter</a>
+                {% endif %}
+            </form>
+        </div>
+
+        <section>
+            <h3>Add Task</h3>
+            <form action="/add_task" method="POST">
+                <input type="number" name="id" placeholder="ID" required style="width: 60px;">
+                <input type="text" name="name" placeholder="Task description..." required style="width: 250px;">
+                <select name="cat_id">
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}">{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary">Add</button>
+            </form>
+        </section>
+
+        <table>
+            <thead>
+                <tr><th>ID</th><th>Task</th><th>Category</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for row in joined_tasks %}
+                <tr>
+                    <td>{{ row.tasks_id }}</td>
+                    <td>{{ row.tasks_name }}</td>
+                    <td><span style="background:#dcfce7; padding:2px 8px; border-radius:12px; font-size:12px;">{{ row.categories_name }}</span></td>
+                    <td>
+                        <a href="/edit/{{ row.tasks_id }}">Edit</a> | 
+                        <a href="/delete/{{ row.tasks_id }}" class="btn-danger">Delete</a>
+                    </td>
+                </tr>
                 {% endfor %}
-            </select>
-            <button type="submit">Add Task</button>
-        </form>
-    </section>
-
-    <table>
-        <thead>
-            <tr style="background: #eee;">
-                <th>ID</th><th>Task</th><th>Category</th><th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for row in joined_tasks %}
-            <tr>
-                <td>{{ row.tasks_id }}</td>
-                <td>{{ row.tasks_name }}</td>
-                <td><strong>{{ row.categories_name }}</strong></td>
-                <td>
-                    <a href="/edit/{{ row.tasks_id }}">Edit</a> | 
-                    <a href="/delete/{{ row.tasks_id }}" style="color:red;">Delete</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+    </div>
 </body>
 </html>

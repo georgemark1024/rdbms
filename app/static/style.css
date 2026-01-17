@@ -1,0 +1,16 @@
+/* app/static/style.css */
+:root { --primary: #2563eb; --danger: #dc2626; --bg: #f8fafc; --text: #1e293b; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; margin: 0; padding: 2rem; }
+.container { max-width: 900px; margin: 0 auto; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+h1 { color: var(--primary); margin-top: 0; }
+nav { margin-bottom: 2rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem; }
+nav a { text-decoration: none; color: var(--text); font-weight: 600; margin-right: 15px; }
+nav a:hover { color: var(--primary); }
+table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+th { text-align: left; background: #f1f5f9; padding: 12px; border-bottom: 2px solid #e2e8f0; }
+td { padding: 12px; border-bottom: 1px solid #e2e8f0; }
+.btn { display: inline-block; padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer; text-decoration: none; font-size: 14px; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-danger { color: var(--danger); font-weight: bold; }
+input, select { padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; margin-right: 5px; }
+.search-box { background: #eff6ff; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem; display: flex; align-items: center; }
