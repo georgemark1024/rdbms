@@ -1,10 +1,13 @@
-from flask import Flask, render_template_string, request, redirect
+from flask import Flask, render_template, request, redirect, flash
 from engine import Engine
 from parser import Parser
 
-import os
+import os, sys
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 app = Flask(__name__)
+app.secret_key = "secret_db_key" # For flash messages
 db = Engine()
 parser = Parser(db)
 DB_FILE = "task_manager.db"
@@ -24,66 +27,52 @@ def init_db():
 
 init_db()
 
-# Simple HTML Template
-HTML_TEMPLATE = """
-<!DOCTYPE html>
-<html>
-<head><title>RDBMS Task Manager</title></head>
-<body>
-    <h1>Task Manager (Powered by Custom RDBMS)</h1>
-    
-    <h3>Add Task</h3>
-    <form action="/add" method="post">
-        ID: <input type="number" name="id" required>
-        Task: <input type="text" name="name" required>
-        Category: 
-        <select name="cat_id">
-            {% for cat in categories %}
-                <option value="{{ cat.id }}">{{ cat.name }}</option>
-            {% endfor %}
-        </select>
-        <button type="submit">Add</button>
-    </form>
-
-    <h3>Your Tasks</h3>
-    <table border="1">
-        <tr><th>ID</th><th>Task</th><th>Category</th><th>Action</th></tr>
-        {% for row in joined_tasks %}
-        <tr>
-            <td>{{ row.tasks_id }}</td>
-            <td>{{ row.tasks_name }}</td>
-            <td>{{ row.categories_name }}</td>
-            <td><a href="/delete/{{ row.tasks_id }}">Delete</a></td>
-        </tr>
-        {% endfor %}
-    </table>
-</body>
-</html>
-"""
-
 @app.route('/')
 def index():
     categories = db.get_table("categories").read_records()
-    # Demonstrate the JOIN feature of your engine
     joined_data = db.inner_join("tasks", "categories", "cat_id", "id")
-    return render_template_string(HTML_TEMPLATE, categories=categories, joined_tasks=joined_data)
+    return render_template('index.html', categories=categories, joined_tasks=joined_data)
 
-@app.route('/add', methods=['POST'])
-def add():
+@app.route('/categories')
+def show_categories():
+    cats = db.get_table("categories").read_records()
+    return render_template('categories.html', categories=cats)
+
+@app.route('/add_category', methods=['POST'])
+def add_category():
+    try:
+        cid = request.form['id']
+        name = request.form['name']
+        # This will trigger Primary Key constraint if ID exists
+        msg = parser.execute(f"INSERT INTO categories VALUES ({cid}, '{name}')")
+        db.save_to_disk(DB_FILE)
+        flash(msg)
+    except Exception as e:
+        flash(f"Error: {e}")
+    return redirect('/categories')
+
+@app.route('/edit/<task_id>')
+def edit_view(task_id):
+    task = db.get_table("tasks").read_records(lambda r: str(r['id']) == str(task_id))[0]
+    cats = db.get_table("categories").read_records()
+    return render_template('edit_task.html', task=task, categories=cats)
+
+@app.route('/update_task', methods=['POST'])
+def update_task():
     tid = request.form['id']
-    name = request.form['name']
-    cid = request.form['cat_id']
-    # Use your SQL Parser!
-    query = f"INSERT INTO tasks VALUES ({tid}, '{name}', {cid})"
-    parser.execute(query)
+    new_name = request.form['name']
+    new_cat = request.form['cat_id']
+    
+    # Use your UPDATE logic
+    parser.execute(f"UPDATE tasks SET name = '{new_name}' WHERE id = {tid}")
+    parser.execute(f"UPDATE tasks SET cat_id = {new_cat} WHERE id = {tid}")
+    
     db.save_to_disk(DB_FILE)
     return redirect('/')
 
-@app.route('/delete/<int:task_id>')
+@app.route('/delete/<task_id>')
 def delete(task_id):
-    # Demonstrates filtering/deletion
-    table = db.get_table("tasks")
-    table.delete_records(lambda r: int(r['id']) == task_id)
+    db.get_table("tasks").delete_records(lambda r: str(r['id']) == str(task_id))
     db.save_to_disk(DB_FILE)
     return redirect('/')
 

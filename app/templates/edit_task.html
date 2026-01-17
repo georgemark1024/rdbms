@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Task</title>
+    <style>body { font-family: sans-serif; margin: 40px; } .form-group { margin-bottom: 15px; }</style>
+</head>
+<body>
+    <h1>Edit Task #{{ task.id }}</h1>
+    <hr>
+    
+    <form action="/update_task" method="POST">
+        <input type="hidden" name="id" value="{{ task.id }}">
+
+        <div class="form-group">
+            <label>Task Description:</label><br>
+            <input type="text" name="name" value="{{ task.name }}" required style="width: 300px;">
+        </div>
+
+        <div class="form-group">
+            <label>Category:</label><br>
+            <select name="cat_id">
+                {% for cat in categories %}
+                <option value="{{ cat.id }}" {% if cat.id == task.cat_id %}selected{% endif %}>
+                    {{ cat.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button type="submit" style="background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer;">
+            Update Record
+        </button>
+        <a href="/" style="margin-left: 10px;">Cancel</a>
+    </form>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RDBMS Dashboard</title>
+    <style>body { font-family: sans-serif; margin: 40px; } table { width: 100%; border-collapse: collapse; margin-top: 20px; }</style>
+</head>
+<body>
+    <h1>Task Dashboard</h1>
+    <nav>
+        <a href="/">Tasks</a> | <a href="/categories">Manage Categories</a>
+    </nav>
+
+    <section>
+        <h3>Add New Task</h3>
+        <form action="/add_task" method="POST">
+            <input type="number" name="id" placeholder="ID" required>
+            <input type="text" name="name" placeholder="Task Description" required>
+            <select name="cat_id">
+                {% for cat in categories %}
+                <option value="{{ cat.id }}">{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit">Add Task</button>
+        </form>
+    </section>
+
+    <table>
+        <thead>
+            <tr style="background: #eee;">
+                <th>ID</th><th>Task</th><th>Category</th><th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in joined_tasks %}
+            <tr>
+                <td>{{ row.tasks_id }}</td>
+                <td>{{ row.tasks_name }}</td>
+                <td><strong>{{ row.categories_name }}</strong></td>
+                <td>
+                    <a href="/edit/{{ row.tasks_id }}">Edit</a> | 
+                    <a href="/delete/{{ row.tasks_id }}" style="color:red;">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
