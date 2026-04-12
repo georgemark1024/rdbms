@@ -30,7 +30,7 @@ The project is divided into two core modules to maintain a clear separation of c
 - **Relational Joins**: Implementation of Inner Joins to merge data between tables (e.g., linking tasks to categories).
 - **Persistence**: Ability to SAVE the entire database state to disk and LOAD it back using Python's serialization.
 
-### ⌨Interface
+### Interface
 
 - **SQL-like Syntax**: A custom parser that understands commands such as SELECT, INSERT, UPDATE, DELETE, and CREATE TABLE.
 - **Interactive REPL**: A command-line interface (repl.py) for direct database interaction and debugging.
