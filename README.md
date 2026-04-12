@@ -2,7 +2,7 @@
 
 A custom-built, in-memory Relational Database Management System (RDBMS) implemented from scratch in Python. This project features a full database engine, a SQL-like parser, a CLI REPL, and a Flask-based web application to demonstrate real-world CRUD operations and relational joins.
 
-## 🚀 How to Run the Web App
+## How to Run the Web App
 
 To launch the Task Manager web interface, ensure you are in the root directory of the project and execute the following command:
 
@@ -12,16 +12,16 @@ python -m app.app
 
 **Note:** Using the `-m` flag ensures that the application handles the modular imports for the engine and parser correctly.
 
-## 🏗️ Architecture
+## Architecture
 
 The project is divided into two core modules to maintain a clear separation of concerns:
 
 - **DB Engine (engine.py)**: The core storage logic. It manages tables, handles in-memory data structures (list of dictionaries), and implements high-performance features like Hash Indexing.
 - **Parser (parser.py)**: The interface layer. It tokenizes SQL-like strings and routes them to the appropriate engine methods, allowing users to interact with the data using familiar commands.
 
-## ✨ Features
+## Features
 
-### 🛠️ Core Database Engine
+### Core Database Engine
 
 - **Data Types**: Support for INT and STR column types with schema validation.
 - **CRUD Operations**: Full support for Creating, Reading, Updating, and Deleting records.
@@ -30,18 +30,18 @@ The project is divided into two core modules to maintain a clear separation of c
 - **Relational Joins**: Implementation of Inner Joins to merge data between tables (e.g., linking tasks to categories).
 - **Persistence**: Ability to SAVE the entire database state to disk and LOAD it back using Python's serialization.
 
-### ⌨️ Interface
+### ⌨Interface
 
 - **SQL-like Syntax**: A custom parser that understands commands such as SELECT, INSERT, UPDATE, DELETE, and CREATE TABLE.
 - **Interactive REPL**: A command-line interface (repl.py) for direct database interaction and debugging.
 
-### 🌐 Web Application
+### Web Application
 
 - **Flask Integration**: A task management dashboard that demonstrates the engine's capabilities.
 - **Relational Dashboard**: Real-time joining of tasks and categories.
 - **Constraint Feedback**: Integrated error handling that displays database constraint violations (like duplicate IDs) directly in the UI.
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 .
@@ -55,12 +55,12 @@ The project is divided into two core modules to maintain a clear separation of c
 └── requirements.txt     # Project Dependencies (Flask)
 ```
 
-## 🛠️ Requirements
+## Requirements
 
 - Python 3.12+
 - Flask
 
-## 📖 SQL Reference
+## SQL Reference
 
 The Parser translates the following SQL-like syntax into Engine operations. Keywords are case-insensitive, but identifiers (table/column names) are case-sensitive.
 
@@ -142,7 +142,7 @@ Restores the database state from a binary file.
 LOAD 'filename.db'
 ```
 
-## 🛠️ Implementation Highlights
+## Implementation Highlights
 
 - **Tokenizer**: Uses Regular Expressions (re module) to identify keywords, literals, and operators.
 - **Command Router**: Uses a dispatcher pattern to route commands to specialized handler methods (_handle_create, _handle_select, etc.).
